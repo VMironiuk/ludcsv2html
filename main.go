@@ -26,15 +26,19 @@ func init() {
 }
 
 func main() {
-	tableCsv, err := os.Open("table.csv")
+	writeRecords("index.html", "tpl.gohtml", readRecords("table.csv"))
+}
+
+func readRecords(filename string) table {
+	tableCsv, err := os.Open(filename)
 	defer tableCsv.Close()
 	if err != nil {
-		log.Fatal("Cannot open table.csv", err)
+		log.Fatal("Cannot open csv file", err)
 	}
 
 	records, err := csv.NewReader(tableCsv).ReadAll()
 	if err != nil {
-		log.Fatal("Cannot read data from table.csv", err)
+		log.Fatal("Cannot read data from csv file", err)
 	}
 
 	var tbl table
@@ -52,14 +56,18 @@ func main() {
 		tbl = append(tbl, i)
 	}
 
-	indexHtml, err := os.Create("index.html")
+	return tbl
+}
+
+func writeRecords(filename string, template string, tbl table) {
+	indexHtml, err := os.Create(filename)
 	defer indexHtml.Close()
 	if err != nil {
-		log.Fatal("Cannot create index.html", err)
+		log.Fatal("Cannot create html file", err)
 	}
 
-	err = tpl.ExecuteTemplate(indexHtml, "tpl.gohtml", tbl)
+	err = tpl.ExecuteTemplate(indexHtml, template, tbl)
 	if err != nil {
-		log.Fatal("Cannot execute tpl.gohtml", err)
+		log.Fatal("Cannot execute gohtml file", err)
 	}
 }
