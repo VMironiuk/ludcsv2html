@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"log"
+	"os"
+	"text/template"
+)
 
 type record struct {
 	Date     string
@@ -13,6 +17,12 @@ type record struct {
 }
 
 type table []record
+
+var tpl *template.Template
+
+func init() {
+	tpl = template.Must(template.ParseFiles("tpl.gohtml"))
+}
 
 func main() {
 	tbl := table{
@@ -36,5 +46,14 @@ func main() {
 		},
 	}
 
-	fmt.Println(tbl)
+	indexHtml, err := os.Create("index.html")
+	defer indexHtml.Close()
+	if err != nil {
+		log.Fatal("Cannot create index.html", err)
+	}
+
+	err = tpl.ExecuteTemplate(indexHtml, "tpl.gohtml", tbl)
+	if err != nil {
+		log.Fatal("Cannot execute tpl.gohtml", err)
+	}
 }
