@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"log"
 	"os"
 	"text/template"
@@ -25,25 +26,30 @@ func init() {
 }
 
 func main() {
-	tbl := table{
-		record{
-			Date:     "2015-07-09",
-			Open:     "523.119995",
-			High:     "523.77002",
-			Low:      "520.349976",
-			Close:    "520.679993",
-			Volume:   "1839400",
-			AdjClose: "520.679993",
-		},
-		record{
-			Date:     "2015-07-08",
-			Open:     "521.049988",
-			High:     "522.734009",
-			Low:      "516.109985",
-			Close:    "516.830017",
-			Volume:   "1264600",
-			AdjClose: "516.830017",
-		},
+	tableCsv, err := os.Open("table.csv")
+	defer tableCsv.Close()
+	if err != nil {
+		log.Fatal("Cannot open table.csv", err)
+	}
+
+	records, err := csv.NewReader(tableCsv).ReadAll()
+	if err != nil {
+		log.Fatal("Cannot read data from table.csv", err)
+	}
+
+	var tbl table
+	records = records[1:]
+	for _, row := range records {
+		i := record{
+			Date:     row[0],
+			Open:     row[1],
+			High:     row[2],
+			Low:      row[3],
+			Close:    row[4],
+			Volume:   row[5],
+			AdjClose: row[6],
+		}
+		tbl = append(tbl, i)
 	}
 
 	indexHtml, err := os.Create("index.html")
